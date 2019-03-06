@@ -1,20 +1,20 @@
 from charms.reactive import (
-    RelationBase,
+    Endpoint,
     hook,
     scopes
 )
 
 
-class ContainerRequires(RelationBase):
+class ContainerRequires(Endpoint):
     scope = scopes.GLOBAL
 
     @hook('{requires:container}-relation-joined')
     def joined(self):
-        self.set_state('{relation_name}.connected')
+        self.set_state('{endpoint_name}.connected')
 
     @hook('{requires:container}-relation-departed')
     def departed(self):
-        self.remove_state('{relation_name}.connected')
+        self.remove_state('{endpoint_name}.connected')
 
     def set_ready(self):
         self.set_remote(data={
