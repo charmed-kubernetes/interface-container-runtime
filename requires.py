@@ -1,28 +1,21 @@
 from charms.reactive import (
     Endpoint,
-    hook,
-    scopes
+    set_flag,
+    clear_flag
+)
+
+from charms.reactive import (
+    when,
+    when_not
 )
 
 
 class ContainerRequires(Endpoint):
-    scope = scopes.GLOBAL
+    @when('endpoint.{endpoint_name}.changed')
+    def changed(self):
+        if any(unit.received_raw['port'] for unit in self.all_joined_units):
+            set_flag(self.expand_name('{endpoint_name}.available'))
 
-    @hook('{requires:container}-relation-joined')
-    def joined(self):
-        self.set_state('{endpoint_name}.connected')
-
-    @hook('{requires:container}-relation-departed')
-    def departed(self):
-        self.remove_state('{endpoint_name}.connected')
-
-    def set_ready(self):
-        self.set_remote(data={
-            'container-ready': True
-        })
-
-    def set_version(self, version):
-        self.set_remote('container-version', version)
-
-    def unset_ready(self):
-        self.set_remote('container-ready', False)
+    @when_not('endpoint.{endpoint_name}.joined')
+    def broken(self):
+        clear_flag(self.expand_name('{endpoint_name}.available'))

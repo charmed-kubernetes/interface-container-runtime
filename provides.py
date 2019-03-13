@@ -1,25 +1,23 @@
 from charms.reactive import (
     Endpoint,
-    hook,
-    scopes
+    set_flag,
+    clear_flag
+)
+
+from charms.reactive import (
+    when,
+    when_not
 )
 
 
 class ContainerProvides(Endpoint):
-    scopes = scopes.GLOBAL
+    @when('endpoint.{endpoint_name}.joined')
+    def joined(self):
+        set_flag(self.expand_name('{endpoint_name}.available'))
 
-    def container_ready(self):
-        return self.get_remote(
-            '{endpoint_name}-ready', 'false'
-        ).lower() == 'true'
+    @when_not('endpoint.{endpoint_name}.joined')
+    def broken(self):
+        clear_flag(self.expand_name('{endpoint_name}.available'))
 
-    @hook('{provides:container}-relation-changed')
-    def changed(self):
-        if self.container_ready():
-            self.set_state('{endpoint_name}.ready')
-        else:
-            self.remove_state('{endpoint_name}.ready')
-
-    @hook('{provides:container}-relation-departed')
-    def departed(self):
-        self.remove_state('{endpoint_name}.ready')
+    def configure(self):
+        pass

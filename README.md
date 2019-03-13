@@ -8,11 +8,7 @@ This interface handles communication between subordinate charms, that provide a 
 
 ### Provides
 
-By providing the container interface, your charm is providing a container runtime.
-
-### Requires
-
-By requiring the container interface, your charm is consuming a container runtime.
+The providing side of the container interface provides a place for a container runtime to connect to.
 
 Your charm should respond to the {endpoint_name}.available state, which indicates that there is at least one container runtime connected.
 
@@ -38,3 +34,7 @@ def update_kubelet_config(containerd):
     kubelet.config['container_runtime_endpoint'] = \
         services[0]['runtime_socket']
 ```
+
+### Requires
+
+The requiring side of the container interface requires a place for a container runtime to connect to.
