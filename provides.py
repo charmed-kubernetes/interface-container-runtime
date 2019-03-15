@@ -19,5 +19,10 @@ class ContainerRuntimeProvides(Endpoint):
     def broken(self):
         clear_flag(self.expand_name('endpoint.{endpoint_name}.available'))
 
-    def configure(self):
-        pass
+    def get_config(self):
+        """
+        Get the configuration published.
+
+        :return: Dictionary configuration
+        """
+        return self.all_joined_units.received
