@@ -10,12 +10,11 @@ from charms.reactive import (
 )
 
 
-class ContainerRequires(Endpoint):
+class ContainerRuntimeRequires(Endpoint):
     @when('endpoint.{endpoint_name}.changed')
     def changed(self):
-        if any(unit.received_raw['port'] for unit in self.all_joined_units):
-            set_flag(self.expand_name('{endpoint_name}.available'))
+        set_flag(self.expand_name('endpoint.{endpoint_name}.available'))
 
     @when_not('endpoint.{endpoint_name}.joined')
     def broken(self):
-        clear_flag(self.expand_name('{endpoint_name}.available'))
+        clear_flag(self.expand_name('endpoint.{endpoint_name}.available'))
