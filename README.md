@@ -10,31 +10,36 @@ This interface handles communication between subordinate charms, that provide a 
 
 The providing side of the container interface provides a place for a container runtime to connect to.
 
-Your charm should respond to the {endpoint_name}.available state, which indicates that there is at least one container runtime connected.
-
-The return value is a list of dicts of the following form:
-
-```python
-[
-    {
-        'service_name': name_of_service,
-        'runtime_socket': uri_to_container_runtime_socket
-    }
-]
-```
+Your charm should respond to the `endpoint.{endpoint_name}.available` state,
+which indicates that there is a container runtime connected.
 
 A trivial example of handling this interface would be:
 
 ```python
-@when('containerd.available')
+@when('endpoint.containerd.joined')
 def update_kubelet_config(containerd):
-    services = containerd.services()
-    if not data_changed('containerd.services', services):
-        return
-    kubelet.config['container_runtime_endpoint'] = \
-        services[0]['runtime_socket']
+    endpoint = endpoint_from_flag('endpoint.containerd.joined')
+    config = endpoint.get_config()
+    kubelet.config['container-runtime'] = \
+        config['runtime']
 ```
 
 ### Requires
 
 The requiring side of the container interface requires a place for a container runtime to connect to.
+
+Your charm should set `{endpoint_name}.available` state,
+which indicates that the container is runtime connected.
+
+A trivial example of handling this interface would be:
+
+```python
+@when('endpoint.containerd.joined')
+def pubish_config():
+    endpoint = endpoint_from_flag('endpoint.containerd.joined')
+    endpoint.set_config(
+        socket='unix:///var/run/containerd/containerd.sock',
+        runtime='remote',
+        nvidia_enabled=False
+    )
+```
