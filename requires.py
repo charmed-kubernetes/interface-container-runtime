@@ -19,6 +19,22 @@ class ContainerRuntimeRequires(Endpoint):
     def broken(self):
         clear_flag(self.expand_name('endpoint.{endpoint_name}.available'))
 
+    def clear_changed(self):
+        """
+        Call when done with `changed`.
+
+        :return: None
+        """
+        clear_flag(self.expand_name('endpoint.{endpoint_name}.changed'))
+
+    def get_config(self):
+        """
+        Get the configuration published.
+
+        :return: Dictionary configuration
+        """
+        return self.all_joined_units.received
+
     def set_config(self, socket, runtime, nvidia_enabled):
         """
         Set the configuration to be published.
@@ -34,3 +50,5 @@ class ContainerRuntimeRequires(Endpoint):
                 'runtime': runtime,
                 'nvidia_enabled': nvidia_enabled
             })
+
+        set_flag(self.expand_name('endpoint.{endpoint_name}.changed'))
