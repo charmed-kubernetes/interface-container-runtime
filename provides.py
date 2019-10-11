@@ -1,50 +1,55 @@
 from charms.reactive import (
     Endpoint,
-    set_flag,
-    clear_flag
-)
-
-from charms.reactive import (
-    when,
-    when_not
+    toggle_flag
 )
 
 
 class ContainerRuntimeProvides(Endpoint):
-    @when('endpoint.{endpoint_name}.joined')
-    def joined(self):
-        set_flag(self.expand_name('endpoint.{endpoint_name}.available'))
+    def manage_flags(self):
+        toggle_flag(self.expand_name('endpoint.{endpoint_name}.available'),
+                    self.is_joined)
 
-    @when_not('endpoint.{endpoint_name}.joined')
-    def broken(self):
-        clear_flag(self.expand_name('endpoint.{endpoint_name}.available'))
-
-    def clear_changed(self):
+    def _get_config(self, key):
         """
-        Call when done with `changed`.
+        Get the published configuration for a given key.
 
-        :return: None
+        :param key: String dict key
+        :return: String value for given key
         """
-        clear_flag(self.expand_name('endpoint.{endpoint_name}.changed'))
+        return self.all_joined_units.received.get(key)
 
-    def get_config(self):
+    def get_nvidia_enabled(self):
         """
-        Get the configuration published.
+        Get the published nvidia config.
 
-        :return: Dictionary configuration
+        :return: String
         """
-        return self.all_joined_units.received
+        return self._get_config(key='nvidia_enabled')
 
-    def set_config(self, pause_image_override=None):
+    def get_runtime(self):
+        """
+        Get the published runtime config.
+
+        :return: String
+        """
+        return self._get_config(key='runtime')
+
+    def get_socket(self):
+        """
+        Get the published socket config.
+
+        :return: String
+        """
+        return self._get_config(key='socket')
+
+    def set_config(self, sandbox_image=None):
         """
         Set the configuration to be published.
 
-        :param pause_image_override: Optional String override container pause image
+        :param sandbox_image: String to optionally override the sandbox image
         :return: None
         """
         for relation in self.relations:
             relation.to_publish.update({
-                'pause_image_override': pause_image_override
+                'sandbox_image': sandbox_image
             })
-
-        set_flag(self.expand_name('endpoint.{endpoint_name}.changed'))
